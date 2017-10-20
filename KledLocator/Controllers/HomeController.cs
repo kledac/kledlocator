@@ -2,18 +2,21 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using KledLocator.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 
 namespace KledLocator.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var model = new Locator();
             model.ip = GetRequestIP();
@@ -26,7 +29,45 @@ namespace KledLocator.Controllers
                 Console.WriteLine(e);
                 
             }
+
+            HttpClient client = new HttpClient();
+
+            Locator newModel = null;
+            try
+            {
+                newModel = await getLocator(model.ip);
+            }
+            catch (Exception e) { }
+
+            if (newModel != null)
+                model = newModel;
+            
+
             return View(model);
+        }
+
+        public async Task<Locator> getLocator(string ip)
+        {
+            HttpClient client = new HttpClient();
+
+
+            var obj = await client.GetAsync(new Uri(string.Format("https://tools.keycdn.com/geo.json?host={0}", ip)));
+            var data = obj.Content.ReadAsStringAsync().Result;
+            return string.IsNullOrEmpty(data) ? new Locator(): JsonConvert.DeserializeObject<Locator>(data);
+            
+        }
+
+        static async Task RunAsync(string ip)
+        {
+            HttpClient client = new HttpClient();
+
+            client.BaseAddress = new Uri(string.Format("https://tools.keycdn.com/geo.json?host={0}",ip));
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var obj = await client.GetAsync(new Uri(string.Format("https://tools.keycdn.com/geo.json?host={0}", ip)));
+
+            
         }
 
 
