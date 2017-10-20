@@ -17,6 +17,15 @@ namespace KledLocator.Controllers
         {
             var model = new Locator();
             model.ip = GetRequestIP();
+            try
+            {
+                model.ip = model.ip.Split(':', StringSplitOptions.RemoveEmptyEntries)[0];
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                
+            }
             return View(model);
         }
 
