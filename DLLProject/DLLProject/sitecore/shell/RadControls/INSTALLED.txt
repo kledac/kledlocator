@@ -1,6 +1,0 @@
-Congratulations!
-
-Presence of this file in /sitecore/shell/RadControls after running test installation means that icons and other resources will be installed properly
-by the release build of installation.
-
-RadControls resources go to /sitecore/shell/RadControls.
