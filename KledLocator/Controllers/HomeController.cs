@@ -35,13 +35,17 @@ namespace KledLocator.Controllers
             Locator newModel = null;
             try
             {
-                newModel = await getLocator(model.ip);
+                newModel = await getLocator("177.156.131.41");
             }
             catch (Exception e) { }
 
             if (newModel != null)
+            {
+                newModel.ip = model.ip;
                 model = newModel;
-            
+                
+            }
+
 
             return View(model);
         }
@@ -54,19 +58,6 @@ namespace KledLocator.Controllers
             var obj = await client.GetAsync(new Uri(string.Format("https://tools.keycdn.com/geo.json?host={0}", ip)));
             var data = obj.Content.ReadAsStringAsync().Result;
             return string.IsNullOrEmpty(data) ? new Locator(): JsonConvert.DeserializeObject<Locator>(data);
-            
-        }
-
-        static async Task RunAsync(string ip)
-        {
-            HttpClient client = new HttpClient();
-
-            client.BaseAddress = new Uri(string.Format("https://tools.keycdn.com/geo.json?host={0}",ip));
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            var obj = await client.GetAsync(new Uri(string.Format("https://tools.keycdn.com/geo.json?host={0}", ip)));
-
             
         }
 
