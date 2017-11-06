@@ -8,13 +8,16 @@
 <div class="row">
     <div class="col-md-12">
         <h2>@Model.ip</h2>
-        <ul>
-            <li>Country: @Model.Location.CountryName</li>
-            <li>State: @Model.Location.StateName</li>
-            <li>City: @Model.Location.CityName</li>
-            <li>Lat: @Model.Location.Latitude</li>
-            <li>Lon: @Model.Location.Longitude</li>
-        </ul>
+        @if (Model.Location != null)
+        {
+            <ul>
+                <li>Country: @Model.Location.CountryName</li>
+                <li>State: @Model.Location.StateName</li>
+                <li>City: @Model.Location.CityName</li>
+                <li>Lat: @Model.Location.Latitude</li>
+                <li>Lon: @Model.Location.Longitude</li>
+            </ul>
+        }
     </div>
 </div>
 

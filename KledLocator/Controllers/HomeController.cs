@@ -41,8 +41,6 @@ namespace KledLocator.Controllers
             
 
             PersonLocation newModel = null;
-            try
-            {
                 if (regexIp.Match(model.ip).Success)
                 {
                     newModel = await getFromDb(model.ip);
@@ -52,9 +50,7 @@ namespace KledLocator.Controllers
                     model.ip = "Defined to: 177.156.131.41";
                     newModel = await getFromDb("177.156.131.41");
                 }
-            }
-            catch (Exception e) { }
-
+            
             if (newModel != null)
             {
                 model.Location = newModel;
