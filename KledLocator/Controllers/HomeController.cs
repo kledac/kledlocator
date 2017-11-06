@@ -4,9 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using KledLocator.Models;
+using MaxMind.Db;
+using MaxMind.GeoIP2;
+using MaxMind.GeoIP2.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
@@ -19,6 +23,7 @@ namespace KledLocator.Controllers
         public async Task<IActionResult> Index()
         {
             var model = new Locator();
+            Regex regexIp = new Regex(@"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b");
             model.ip = GetRequestIP();
             try
             {
@@ -30,24 +35,63 @@ namespace KledLocator.Controllers
                 
             }
 
+            
             HttpClient client = new HttpClient();
 
-            Locator newModel = null;
+            
+
+            PersonLocation newModel = null;
             try
             {
-                newModel = await getLocator("177.156.131.41");
+                if (regexIp.Match(model.ip).Success)
+                {
+                    newModel = await getFromDb(model.ip);
+                }
+                else
+                {
+                    model.ip = "Defined to: 177.156.131.41";
+                    newModel = await getFromDb("177.156.131.41");
+                }
             }
             catch (Exception e) { }
 
             if (newModel != null)
             {
-                newModel.ip = model.ip;
-                model = newModel;
+                model.Location = newModel;
                 
             }
 
 
             return View(model);
+        }
+
+        public async Task<PersonLocation> getFromDb(string ip)
+        {
+            PersonLocation returnObj = null;
+
+            using (var reader = new DatabaseReader("App_Data/GeoLite2-City.mmdb"))
+            {
+                // Replace "City" with the appropriate method for your database, e.g.,
+                // "Country".
+                var city  = reader.City(ip);
+                returnObj = new PersonLocation(city.City.Name, city.MostSpecificSubdivision.Name,city.Country.Name,city.Location.Latitude,city.Location.Longitude);
+
+                //Console.WriteLine(returnObj.Country.IsoCode); // 'US'
+                //Console.WriteLine(returnObj.Country.Name); // 'United States'
+                //Console.WriteLine(returnObj.Country.Names["zh-CN"]); // '美国'
+
+                //Console.WriteLine(returnObj.MostSpecificSubdivision.Name); // 'Minnesota'
+                //Console.WriteLine(returnObj.MostSpecificSubdivision.IsoCode); // 'MN'
+
+                //Console.WriteLine(returnObj.City.Name); // 'Minneapolis'
+
+                //Console.WriteLine(returnObj.Postal.Code); // '55455'
+
+                //Console.WriteLine(returnObj.Location.Latitude); // 44.9733
+                //Console.WriteLine(returnObj.Location.Longitude); // -93.2323
+            }
+
+            return returnObj;
         }
 
         public async Task<Locator> getLocator(string ip)

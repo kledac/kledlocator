@@ -8,6 +8,7 @@ namespace KledLocator.Models
         public string status { get; set; }
         public string description { get; set; }
         public Data data { get; set; }
+        public PersonLocation Location { get; set; }
     }
 
     public class Data
